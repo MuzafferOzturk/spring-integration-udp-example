@@ -1,20 +1,24 @@
 package tr.com.example;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.integration.ip.udp.UnicastReceivingChannelAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.context.IntegrationFlowContext;
+import org.springframework.integration.ip.dsl.Udp;
 import org.springframework.stereotype.Component;
 
-@Component("UdpReceiving")
+@Component("udpReceiving")
 public class UdpReceiving {
 
-    @Value("${port}")
-    private Integer port;
+    @Autowired
+    IntegrationFlowContext integrationFlowContext;
 
-    @Bean
-    public UnicastReceivingChannelAdapter udpIn(){
-        UnicastReceivingChannelAdapter adapter = new UnicastReceivingChannelAdapter(port);
-        adapter.setOutputChannelName("udpInChannel");
-        return adapter;
+    public void registerReceiving(int port){
+        IntegrationFlow flow = IntegrationFlows
+                .from(Udp.inboundAdapter(port))
+                .channel("udpInChannel")
+                .get();
+        integrationFlowContext.registration(flow).register();
     }
+
 }
